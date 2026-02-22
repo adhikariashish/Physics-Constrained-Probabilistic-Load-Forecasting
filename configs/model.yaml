@@ -1,0 +1,45 @@
+  # model config
+model:
+  name: "transformer_forecaster"  # options: transformer_forecaster, lstm_forecaster
+  version: "v0"
+
+  io:
+    context_length: 168
+    horizon: 24
+    num_features: -1              # placeholder; set after feature building
+    target_dim: 1                 # load is scalar
+
+  backbone:
+    transformer:
+      enabled: true
+      d_model: 128
+      n_heads: 4
+      n_layers: 4
+      d_ff: 256
+      dropout: 0.1
+      attention:
+        type: "causal"            # options: causal, full (depending on design)
+      positional_encoding:
+        type: "learned"           # options: learned, sinusoidal
+
+    lstm:                         # placeholder for baseline config
+      enabled: false
+      hidden_size: 128
+      n_layers: 2
+      dropout: 0.1
+      bidirectional: false
+
+  head:
+    name: "probabilistic_head"
+    option:
+      distribution: "gaussian"    # options: gaussian, student_t (future), quantile (future)
+      parameterization:
+        sigma_activation: "softplus"
+        min_sigma: 1.0e-3
+      predict:
+        mean: true
+        scale: true
+
+  regularization:
+    weight_decay: 1.0e-4
+    gradient_clip_norm: 1.0

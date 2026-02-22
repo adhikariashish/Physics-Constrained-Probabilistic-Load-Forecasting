@@ -1,0 +1,83 @@
+  # train config
+train:
+  run:
+    dir: "runs"
+    name: "exp_transformer_gaussian_v0"
+    tags: ["variantA", "hourly", "probabilistic", "physics"]
+    notes: "placeholder run notes"
+
+  device:
+    name: "auto"                  # options: auto, cpu, cuda
+    precision:
+      dtype: "float32"            # options: float32, float64
+      amp: false                  # enable later if you want
+
+  reproducibility:
+    seed: 42
+    deterministic: true
+    cudnn_benchmark: false
+
+  optimization:
+    optimizer:
+      name: "adamw"               # options: adamw, adam
+      lr: 3.0e-4
+      betas: [0.9, 0.999]
+      eps: 1.0e-8
+      weight_decay: 1.0e-4
+    scheduler:
+      enabled: true
+      name: "cosine"              # options: cosine, reduce_on_plateau
+      warmup_epochs: 2
+      min_lr: 1.0e-6
+
+  loop:
+    epochs: 50
+    batch_size: 64
+    num_workers: 4
+    log_every_steps: 50
+    eval_every_epochs: 1
+
+  early_stopping:
+    enabled: true
+    monitor:
+      metric: "val/nll"           # options: val/nll, val/mae
+      mode: "min"
+    patience: 10
+    min_delta: 0.0
+
+  checkpointing:
+    enabled: true
+    save_best: true
+    save_last: true
+    metric: "val/nll"
+    mode: "min"
+
+  physics:
+    enabled: true
+    option:
+      apply_to: "mean"            # options: mean, samples (future)
+    bounds:
+      enabled: true
+      lambda: 0.1
+      upper_bound:
+        enabled: true
+        strategy: "train_max_margin"
+        margin: 0.05              # 5% above train max
+    ramp:
+      enabled: true
+      lambda: 0.1
+      strategy: "quantile"
+      quantile: 0.99              # learn R_max from train ramps
+    smoothness:
+      enabled: false
+      lambda: 0.01
+
+  logging:
+    enabled: true
+    save_resolved_config: true
+    save_predictions: true
+    save_plots: true
+    save_metrics: true
+    artifacts:
+      metrics_format: ["json", "csv"]
+      predictions_format: "parquet"

@@ -1,0 +1,93 @@
+  # data config
+data:
+  source:
+    name: "ercot_hourly"          # options: ercot_hourly, perform_5min (future)
+    version: "v0"
+    raw_dir: "data/raw"
+    processed_dir: "data/processed"
+
+  data_schema:
+    timestamp_col: "timestamp"
+    target_col: "load_mw"
+    timezone: "America/Chicago"   # keep consistent end-to-end
+    freq: "H"                     # hourly
+
+  target:
+    name: "system_load"           # options: system_load, zonal_load (future)
+    unit: "MW"
+
+  windows:
+    context_length: 168           # past hours used as input
+    horizon: 24                   # forecast steps ahead
+    stride: 1                     # sliding window stride
+    allow_partial_windows: false
+
+  split:
+    strategy: "time"              # options: time, rolling (future)
+    time:
+      train:
+        start: "YYYY-MM-DD"
+        end: "YYYY-MM-DD"
+      val:
+        start: "YYYY-MM-DD"
+        end: "YYYY-MM-DD"
+      test:
+        start: "YYYY-MM-DD"
+        end: "YYYY-MM-DD"
+    rolling:                      # placeholder for milestone 4+
+      enabled: false
+      folds: 5
+      step_size: 168
+
+  missingness:
+    policy: "drop"                # options: drop, impute
+    max_missing_pct: 0.01
+    impute:
+      method: "ffill"             # placeholder
+      limit: 3
+
+  scaling:
+    enabled: true
+    target:
+      method: "standard"          # options: standard, robust, none
+    features:
+      method: "standard"
+    fit_on: "train"               # never change: train only
+
+  features:
+    calendar:
+      enabled: true
+      hour_of_day:
+        enabled: true
+        encoding: "sin_cos"
+      day_of_week:
+        enabled: true
+        encoding: "sin_cos"
+      is_weekend:
+        enabled: true
+      is_holiday:
+        enabled: false            # enable in phase 2 with holiday calendar
+        calendar_name: "US"
+
+    lags:
+      enabled: true
+      values: [1, 2, 3, 24, 48, 72, 168]
+
+    rolling:
+      enabled: true
+      windows: [24, 168]
+      stats: ["mean", "std"]
+
+    exogenous:
+      enabled: false              # phase 2: weather, renewables, price, etc.
+      weather:
+        enabled: false
+        source: "NOAA"
+      renewables:
+        enabled: false
+      price:
+        enabled: false
+
+  output:
+    processed_filename: "ercot_hourly_v0.parquet"
+    split_filename: "splits_v0.json"

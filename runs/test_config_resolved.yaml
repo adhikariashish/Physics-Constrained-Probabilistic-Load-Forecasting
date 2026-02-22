@@ -1,0 +1,265 @@
+data:
+  source:
+    name: ercot_hourly
+    version: v0
+    raw_dir: data/raw
+    processed_dir: data/processed
+  data_schema:
+    timestamp_col: timestamp
+    target_col: load_mw
+    timezone: America/Chicago
+    freq: H
+  target:
+    name: system_load
+    unit: MW
+  windows:
+    context_length: 168
+    horizon: 24
+    stride: 1
+    allow_partial_windows: false
+  split:
+    strategy: time
+    time:
+      train:
+        start: YYYY-MM-DD
+        end: YYYY-MM-DD
+      val:
+        start: YYYY-MM-DD
+        end: YYYY-MM-DD
+      test:
+        start: YYYY-MM-DD
+        end: YYYY-MM-DD
+    rolling:
+      enabled: false
+      folds: 5
+      step_size: 168
+  missingness:
+    policy: drop
+    max_missing_pct: 0.01
+    impute:
+      method: ffill
+      limit: 3
+  scaling:
+    enabled: true
+    target:
+      method: standard
+    features:
+      method: standard
+    fit_on: train
+  features:
+    calendar:
+      enabled: true
+      hour_of_day:
+        enabled: true
+        encoding: sin_cos
+      day_of_week:
+        enabled: true
+        encoding: sin_cos
+      is_weekend:
+        enabled: true
+      is_holiday:
+        enabled: false
+        calendar_name: US
+    lags:
+      enabled: true
+      values:
+      - 1
+      - 2
+      - 3
+      - 24
+      - 48
+      - 72
+      - 168
+    rolling:
+      enabled: true
+      windows:
+      - 24
+      - 168
+      stats:
+      - mean
+      - std
+    exogenous:
+      enabled: false
+      weather:
+        enabled: false
+        source: NOAA
+      renewables:
+        enabled: false
+      price:
+        enabled: false
+  output:
+    processed_filename: ercot_hourly_v0.parquet
+    split_filename: splits_v0.json
+model:
+  name: transformer_forecaster
+  version: v0
+  io:
+    context_length: 168
+    horizon: 24
+    num_features: -1
+    target_dim: 1
+  backbone:
+    transformer:
+      enabled: true
+      d_model: 128
+      n_heads: 4
+      n_layers: 4
+      d_ff: 256
+      dropout: 0.1
+      attention:
+        type: causal
+      positional_encoding:
+        type: learned
+    lstm:
+      enabled: false
+      hidden_size: 128
+      n_layers: 2
+      dropout: 0.1
+      bidirectional: false
+  head:
+    name: probabilistic_head
+    option:
+      distribution: gaussian
+      parameterization:
+        sigma_activation: softplus
+        min_sigma: 0.001
+      predict:
+        mean: true
+        scale: true
+  regularization:
+    weight_decay: 0.0001
+    gradient_clip_norm: 1.0
+train:
+  run:
+    dir: runs
+    name: exp_transformer_gaussian_v0
+    tags:
+    - variantA
+    - hourly
+    - probabilistic
+    - physics
+    notes: placeholder run notes
+  device:
+    name: auto
+    precision:
+      dtype: float32
+      amp: false
+  reproducibility:
+    seed: 42
+    deterministic: true
+    cudnn_benchmark: false
+  optimization:
+    optimizer:
+      name: adamw
+      lr: 0.0003
+      betas:
+      - 0.9
+      - 0.999
+      eps: 1.0e-08
+      weight_decay: 0.0001
+    scheduler:
+      enabled: true
+      name: cosine
+      warmup_epochs: 2
+      min_lr: 1.0e-06
+  loop:
+    epochs: 50
+    batch_size: 64
+    num_workers: 4
+    log_every_steps: 50
+    eval_every_epochs: 1
+  early_stopping:
+    enabled: true
+    monitor:
+      metric: val/nll
+      mode: min
+    patience: 10
+    min_delta: 0.0
+  checkpointing:
+    enabled: true
+    save_best: true
+    save_last: true
+    metric: val/nll
+    mode: min
+  physics:
+    enabled: true
+    option:
+      apply_to: mean
+    bounds:
+      enabled: true
+      lambda: 0.1
+      upper_bound:
+        enabled: true
+        strategy: train_max_margin
+        margin: 0.05
+    ramp:
+      enabled: true
+      lambda: 0.1
+      strategy: quantile
+      quantile: 0.99
+    smoothness:
+      enabled: false
+      lambda: 0.01
+  logging:
+    enabled: true
+    save_resolved_config: true
+    save_predictions: true
+    save_plots: true
+    save_metrics: true
+    artifacts:
+      metrics_format:
+      - json
+      - csv
+      predictions_format: parquet
+eval:
+  splits:
+  - val
+  - test
+  metrics:
+    point:
+      enabled: true
+      list:
+      - mae
+      - rmse
+      by_horizon: true
+    probabilistic:
+      enabled: true
+      list:
+      - nll
+      by_horizon: true
+  calibration:
+    enabled: true
+    intervals:
+      levels:
+      - 0.5
+      - 0.8
+      - 0.9
+      - 0.95
+      by_horizon: true
+    reliability:
+      bins: 10
+    sharpness:
+      enabled: true
+      report_interval_width: true
+  plots:
+    enabled: true
+    forecast_examples:
+      enabled: true
+      num_examples: 6
+    coverage_by_horizon:
+      enabled: true
+    interval_width_by_horizon:
+      enabled: true
+    reliability_diagram:
+      enabled: true
+    error_heatmap:
+      enabled: true
+      group_by:
+      - hour_of_day
+      - day_of_week
+  reporting:
+    output_dir:
+      reports_root: reports
+      figures_dir: reports/figures
+      metrics_dir: reports/metrics
+    run_artifacts_dir: runs

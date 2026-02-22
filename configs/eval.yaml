@@ -1,0 +1,46 @@
+  #eval config
+eval:
+  splits: ["val", "test"]
+
+  metrics:
+    point:
+      enabled: true
+      list: ["mae", "rmse"]
+      by_horizon: true
+    probabilistic:
+      enabled: true
+      list: ["nll"]
+      by_horizon: true
+
+  calibration:
+    enabled: true
+    intervals:
+      levels: [0.5, 0.8, 0.9, 0.95]
+      by_horizon: true
+    reliability:
+      bins: 10
+    sharpness:
+      enabled: true
+      report_interval_width: true
+
+  plots:
+    enabled: true
+    forecast_examples:
+      enabled: true
+      num_examples: 6
+    coverage_by_horizon:
+      enabled: true
+    interval_width_by_horizon:
+      enabled: true
+    reliability_diagram:
+      enabled: true
+    error_heatmap:
+      enabled: true
+      group_by: ["hour_of_day", "day_of_week"]
+
+  reporting:
+    output_dir:
+      reports_root: "reports"
+      figures_dir: "reports/figures"
+      metrics_dir: "reports/metrics"
+    run_artifacts_dir: "runs"     # matches train.run.dir
