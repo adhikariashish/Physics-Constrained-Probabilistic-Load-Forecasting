@@ -4,6 +4,14 @@ data:
     version: v0
     raw_dir: data/raw
     processed_dir: data/processed
+    years:
+    - 2019
+    - 2020
+    - 2021
+    - 2022
+    - 2023
+    - 2023
+    - 2025
   data_schema:
     timestamp_col: timestamp
     target_col: load_mw
@@ -11,6 +19,7 @@ data:
     freq: H
   target:
     name: system_load
+    column: ERCOT
     unit: MW
   windows:
     context_length: 168
@@ -21,14 +30,14 @@ data:
     strategy: time
     time:
       train:
-        start: YYYY-MM-DD
-        end: YYYY-MM-DD
+        start: '2019-01-01'
+        end: '2023-12-31'
       val:
-        start: YYYY-MM-DD
-        end: YYYY-MM-DD
+        start: '2024-01-01'
+        end: '2024-12-31'
       test:
-        start: YYYY-MM-DD
-        end: YYYY-MM-DD
+        start: '2025-01-01'
+        end: '2025-12-31'
     rolling:
       enabled: false
       folds: 5
@@ -89,7 +98,8 @@ data:
         enabled: false
   output:
     processed_filename: ercot_hourly_v0.parquet
-    split_filename: splits_v0.json
+    zones_filename: ercot_native_load_zones_v0.parquet
+    save_zones: false
 model:
   name: transformer_forecaster
   version: v0

@@ -13,6 +13,8 @@ class DataSourceCfg(BaseModel):
     version: str = "v0"
     raw_dir: str = "data/raw"
     processed_dir: str = "data/processed"
+    years: list[int] = Field(default_factory=lambda : [2019,2021,2022,2023,2024,2025])
+    sheet_name: str = "Sheet1"
 
 
 class DataSchemaCfg(BaseModel):
@@ -21,11 +23,12 @@ class DataSchemaCfg(BaseModel):
     target_col: str = "load_mw"
     timezone: str = "America/Chicago"
     freq: str = "H"
-
+    hour_convention: str = "ending"
 
 class DataTargetCfg(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = "system_load"
+    column: str = "ERCOT"
     unit: str = "MW"
 
 
@@ -148,7 +151,8 @@ class FeaturesCfg(BaseModel):
 class DataOutputCfg(BaseModel):
     model_config = ConfigDict(extra="forbid")
     processed_filename: str = "ercot_hourly_v0.parquet"
-    split_filename: str = "splits_v0.json"
+    zones_filename: str = "ercot_native_load_zones_v0.parquet"
+    save_zones: bool = False
 
 
 class DataCfg(BaseModel):

@@ -1,0 +1,116 @@
+{
+  "ingest": [
+    {
+      "year": 2019,
+      "zip_path": "data\\raw\\2019\\Native_Load_2019.zip",
+      "xlsx_file": "Native_Load_2019.xlsx",
+      "chosen_sheet": "Native Load Report",
+      "rows_read": 8760,
+      "rows_after_basic_clean": 8394,
+      "dropped_bad_timestamps": 366,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2020,
+      "zip_path": "data\\raw\\2020\\Native_Load_2020.zip",
+      "xlsx_file": "Native_Load_2020.xlsx",
+      "chosen_sheet": "Native Load Report",
+      "rows_read": 8784,
+      "rows_after_basic_clean": 8417,
+      "dropped_bad_timestamps": 367,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2021,
+      "zip_path": "data\\raw\\2021\\Native_Load_2021.zip",
+      "xlsx_file": "Native_Load_2021.xlsx",
+      "chosen_sheet": "Sheet1",
+      "rows_read": 8760,
+      "rows_after_basic_clean": 8394,
+      "dropped_bad_timestamps": 366,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2022,
+      "zip_path": "data\\raw\\2022\\Native_Load_2022.zip",
+      "xlsx_file": "Native_Load_2022.xlsx",
+      "chosen_sheet": "Sheet1",
+      "rows_read": 8760,
+      "rows_after_basic_clean": 8394,
+      "dropped_bad_timestamps": 366,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2023,
+      "zip_path": "data\\raw\\2023\\Native_Load_2023.zip",
+      "xlsx_file": "Native_Load_2023.xlsx",
+      "chosen_sheet": "Sheet1",
+      "rows_read": 8760,
+      "rows_after_basic_clean": 8394,
+      "dropped_bad_timestamps": 366,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2024,
+      "zip_path": "data\\raw\\2024\\Native_Load_2024.zip",
+      "xlsx_file": "Native_Load_2024.xlsx",
+      "chosen_sheet": "Sheet1",
+      "rows_read": 8784,
+      "rows_after_basic_clean": 8417,
+      "dropped_bad_timestamps": 367,
+      "dropped_missing_target": 0
+    },
+    {
+      "year": 2025,
+      "zip_path": "data\\raw\\2025\\Native_Load_2025.zip",
+      "xlsx_file": "Native_Load_2025.xlsx",
+      "chosen_sheet": "Sheet1",
+      "rows_read": 8760,
+      "rows_after_basic_clean": 8394,
+      "dropped_bad_timestamps": 366,
+      "dropped_missing_target": 0
+    }
+  ],
+  "clean_stats": {
+    "rows_in": 58804,
+    "rows_after_drop_bad_timestamps": 58804,
+    "rows_after_dedupe": 58804,
+    "rows_after_missing_policy": 58804,
+    "duplicates_dropped": 0,
+    "missing_target_dropped": 0,
+    "missing_hours_estimated": 2563,
+    "start_timestamp": "2019-01-01 01:00:00",
+    "end_timestamp": "2025-12-31 23:00:00",
+    "freq": "h",
+    "timezone_note": "Stored as naive local time; interpret as America/Chicago",
+    "missing_policy": "drop",
+    "hour_convention_note": "ERCOT Hour Ending (stored naive local time)",
+    "rows_out_system": 61367,
+    "rows_out_zones": 61367,
+    "save_zones": true,
+    "hourly_expected_hours_system": 61367,
+    "hourly_missing_inserted_system": 2563,
+    "hourly_imputed_cells_system": 2563,
+    "hourly_rows_dropped_after_impute_system": 0,
+    "hourly_expected_hours_zones": 61367,
+    "hourly_missing_inserted_zones": 2563,
+    "hourly_imputed_cells_zones": 23067,
+    "hourly_rows_dropped_after_impute_zones": 0
+  },
+  "system_summary": {
+    "rows": 61367,
+    "time_min": "2019-01-01 01:00:00",
+    "time_max": "2025-12-31 23:00:00",
+    "load_mw": {
+      "min": 27491.364599,
+      "mean": 48715.03452763779,
+      "max": 85464.116394,
+      "std": 11151.608681214637
+    },
+    "ramp_delta_mw": {
+      "0.95": 3317.00935975,
+      "0.99": 4284.826904399999,
+      "0.999": 4916.230042550062
+    }
+  }
+}

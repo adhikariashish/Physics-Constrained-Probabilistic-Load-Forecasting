@@ -1,0 +1,24 @@
+{
+  "strategy": "time",
+  "timezone_note": "Stored as naive local time; interpret as America/Chicago",
+  "freq": "h",
+  "train": {
+    "start": "2019-01-01",
+    "end": "2023-12-31"
+  },
+  "val": {
+    "start": "2024-01-01",
+    "end": "2024-12-31"
+  },
+  "test": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "counts": {
+    "train": 43823,
+    "val": 8784,
+    "test": 8760
+  },
+  "processed_file": "data/processed/ercot_hourly_v0.parquet",
+  "zones_file": "data/processed/ercot_native_load_zones_v0.parquet"
+}

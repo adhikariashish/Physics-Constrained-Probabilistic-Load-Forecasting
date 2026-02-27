@@ -5,15 +5,19 @@ data:
     version: "v0"
     raw_dir: "data/raw"
     processed_dir: "data/processed"
+    years: [2019,2020,2021,2022,2023,2024,2025]
+    sheet_name: "Sheet1"
 
   data_schema:
     timestamp_col: "timestamp"
     target_col: "load_mw"
     timezone: "America/Chicago"   # keep consistent end-to-end
-    freq: "H"                     # hourly
+    freq: "h"                     # hourly
+    hour_convention: "ending"     # for later change to hour convention
 
   target:
     name: "system_load"           # options: system_load, zonal_load (future)
+    column: "ERCOT"
     unit: "MW"
 
   windows:
@@ -26,14 +30,14 @@ data:
     strategy: "time"              # options: time, rolling (future)
     time:
       train:
-        start: "YYYY-MM-DD"
-        end: "YYYY-MM-DD"
+        start: "2019-01-01"
+        end: "2023-12-31"
       val:
-        start: "YYYY-MM-DD"
-        end: "YYYY-MM-DD"
+        start: "2024-01-01"
+        end: "2024-12-31"
       test:
-        start: "YYYY-MM-DD"
-        end: "YYYY-MM-DD"
+        start: "2025-01-01"
+        end: "2025-12-31"
     rolling:                      # placeholder for milestone 4+
       enabled: false
       folds: 5
@@ -66,7 +70,7 @@ data:
       is_weekend:
         enabled: true
       is_holiday:
-        enabled: false            # enable in phase 2 with holiday calendar
+        enabled: true            # enable in phase 2 with holiday calendar
         calendar_name: "US"
 
     lags:
@@ -90,4 +94,5 @@ data:
 
   output:
     processed_filename: "ercot_hourly_v0.parquet"
-    split_filename: "splits_v0.json"
+    zones_filename: "ercot_native_load_zones_v0.parquet"
+    save_zones: true

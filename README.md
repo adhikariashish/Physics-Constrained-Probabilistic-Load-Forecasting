@@ -60,3 +60,6 @@ Training optimizes a probabilistic loss (Gaussian NLL) plus soft physics/structu
 - (Optional) smoothness regularization
 
 These are controlled via `train.physics.*` in `configs/train.yaml`.
+
+
+https://www.ercot.com/gridinfo/load/load_hist
