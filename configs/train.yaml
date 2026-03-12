@@ -2,8 +2,8 @@
 train:
   run:
     dir: "runs"
-    name: "exp_transformer_gaussian_v0"
-    tags: ["variantA", "hourly", "probabilistic", "physics"]
+    name: "exp_lstm_gaussian_v0"   # instead of exp_transformer_gaussian_v0
+    tags: [ "variantA", "lstm", "hourly", "probabilistic" ]  # optional clarity
     notes: "placeholder run notes"
 
   device:
@@ -53,7 +53,7 @@ train:
     mode: "min"
 
   physics:
-    enabled: true
+    enabled: false
     option:
       apply_to: "mean"            # options: mean, samples (future)
     bounds:

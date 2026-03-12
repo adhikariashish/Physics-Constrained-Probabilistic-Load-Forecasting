@@ -83,7 +83,7 @@ def load_config(
         # NOTE: still wrap into AppConfig for dot-access, but skip strict validation.
         return AppConfig.model_construct(**merged)
 
-    return AppConfig.model_validate(merged)
+    return AppConfig.model_validate(merged, by_name=True)
 
 
 def save_resolved_config(

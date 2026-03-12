@@ -218,12 +218,16 @@ class HeadOptionCfg(BaseModel):
     parameterization: HeadParamCfg = Field(default_factory=HeadParamCfg)
     predict: Dict[str, Any] = Field(default_factory=lambda: {"mean": True, "scale": True})
 
+class HeadMlpCfg(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    hidden_dim: int = 128
+    dropout: float = 0.1
 
 class HeadCfg(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = "probabilistic_head"
+    mlp: HeadMlpCfg = Field(default_factory=HeadMlpCfg)
     option: HeadOptionCfg = Field(default_factory=HeadOptionCfg)
-
 
 class RegularizationCfg(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -434,14 +438,14 @@ class PlotsCfg(BaseModel):
     reliability_diagram: Dict[str, Any] = Field(default_factory=lambda: {"enabled": True})
     error_heatmap: Dict[str, Any] = Field(default_factory=lambda: {"enabled": True, "group_by": ["hour_of_day", "day_of_week"]})
 
+class OutputDirCfg(BaseModel):
+    reports_root: str = "reports",
+    figures_dir: str = "reports/figures",
+    metrics_dir: str = "reports/metrics"
 
 class ReportingCfg(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    output_dir: Dict[str, Any] = Field(default_factory=lambda: {
-        "reports_root": "reports",
-        "figures_dir": "reports/figures",
-        "metrics_dir": "reports/metrics"
-    })
+    output_dir: OutputDirCfg = Field(default_factory=OutputDirCfg)
     run_artifacts_dir: str = "runs"
 
 
