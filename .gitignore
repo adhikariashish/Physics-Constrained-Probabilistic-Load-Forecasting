@@ -1,6 +1,63 @@
-.idea/
-
+# ================================
+# Python
+# ================================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.ipynb_checkpoints
+
+# ================================
+# Virtual environments
+# ================================
+venv/
+env/
+.venv/
+ENV/
+
+# ================================
+# OS files
+# ================================
+.DS_Store
+Thumbs.db
+
+# ================================
+# IDE / Editors
+# ================================
+.vscode/
+.idea/
+
+# ================================
+# Training artifacts (DO NOT PUSH)
+# ================================
+runs/
+checkpoints/
+logs/
+tensorboard/
+*.pt
+*.ckpt
+*.pth
+
+# ================================
+# Temporary outputs
+# ================================
+tmp/
+temp/
+.tmp.driveupload/
+.tmp.drivedownload
+
+# ================================
+# Data (raw datasets should not be pushed)
+# ================================
+data/raw/*
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
+
+# ================================
+# Forecast outputs
+# keep example forecast
+# ================================
+reports/latest_forecast/*
+!reports/latest_forecast/example_forecast.json

@@ -16,6 +16,9 @@ from src.training.callbacks import EarlyStopping
 from src.training.checkpointing import make_run_dirs, save_checkpoint
 from src.utils.seed import set_global_seed
 
+from src.physics.stats import compute_physics_stats
+from src.physics.penalties import compute_physics_penalty
+
 
 def resolve_device(cfg: AppConfig) -> torch.device:
     name = str(cfg.train.device.name).lower().strip()
@@ -91,9 +94,6 @@ def eval_epoch(
 
 
 def train(cfg: AppConfig, *, source: str = "system") -> Path:
-    # physics not in 2B
-    if bool(cfg.train.physics.enabled):
-        raise ValueError("Milestone 2B: set train.physics.enabled=false (physics loss comes in Milestone 3).")
 
     # reproducibility
     set_global_seed(
@@ -181,6 +181,21 @@ def train(cfg: AppConfig, *, source: str = "system") -> Path:
     else:
         print("[scaling] disabled (cfg.data.scaling.enabled=false)")
 
+    #physics stats (derived from only train data)
+    physics_stats = None
+    if bool(cfg.train.physics.enabled):
+        ramp_q = float(cfg.train.physics.ramp.quantile)
+        physics_stats = compute_physics_stats(
+            train_loader,
+            y_scaler=None,  # y from loader is already in MW before scaling in trainer
+            ramp_quantile=ramp_q,
+            max_batches=None,
+        )
+        print(
+            f"[physics] train_max_mw={physics_stats.train_max_mw:.2f}, "
+            f"ramp_limit_mw={physics_stats.ramp_limit_mw:.2f}"
+        )
+
     # early stopping
     es: Optional[EarlyStopping] = None
     if bool(cfg.train.early_stopping.enabled):
@@ -219,15 +234,45 @@ def train(cfg: AppConfig, *, source: str = "system") -> Path:
             else:
                 Xs, ys = X, y
 
+            # optimizer.zero_grad(set_to_none=True)
+            # out = model(Xs)
+            # if isinstance(out, tuple):
+            #     mu, sigma = out
+            # else:
+            #     mu, sigma = out.mu, out.sigma
+            #
+            # loss = gaussian_nll(y=ys, mu=mu, sigma=sigma)
+            # loss.backward()
             optimizer.zero_grad(set_to_none=True)
             out = model(Xs)
+
+            # support both tuple and object outputs
             if isinstance(out, tuple):
                 mu, sigma = out
             else:
                 mu, sigma = out.mu, out.sigma
 
-            loss = gaussian_nll(y=ys, mu=mu, sigma=sigma)
+            forecast_loss = gaussian_nll(y=ys, mu=mu, sigma=sigma)
+
+            physics_loss = torch.zeros((), device=device, dtype=forecast_loss.dtype)
+            phys_out = None
+
+            if bool(cfg.train.physics.enabled):
+                if y_scaler is None:
+                    mu_mw = mu
+                else:
+                    mu_mw = y_scaler.inverse(mu)
+
+                phys_out = compute_physics_penalty(
+                    mu_mw=mu_mw,
+                    cfg=cfg.train.physics,
+                    stats=physics_stats,
+                )
+                physics_loss = phys_out.total
+
+            loss = forecast_loss + physics_loss
             loss.backward()
+
 
             clip = float(cfg.model.regularization.gradient_clip_norm)
             if clip and clip > 0:
@@ -239,11 +284,28 @@ def train(cfg: AppConfig, *, source: str = "system") -> Path:
             if log_every > 0 and (global_step % log_every == 0):
                 with torch.no_grad():
                     if y_scaler is not None:
-                        mu_mw = y_scaler.inverse(mu)
-                        mae = (mu_mw - y).abs().mean().item()
+                        mu_mw_eval = y_scaler.inverse(mu)
+                        mae = (mu_mw_eval - y).abs().mean().item()
                     else:
-                        mae = (mu - y).abs().mean().item()
-                print(f"[train][e{epoch:03d} step{global_step:07d}] nll={loss.item():.4f} mae(MW)={mae:.2f}")
+                        mu_mw_eval = mu
+                        mae = (mu_mw_eval - y).abs().mean().item()
+
+                    msg = (
+                        f"[train][e{epoch:03d} step{global_step:07d}] "
+                        f"forecast_nll={forecast_loss.item():.4f} "
+                        f"physics={physics_loss.item():.4f} "
+                        f"total={loss.item():.4f} "
+                        f"mae(MW)={mae:.2f}"
+                    )
+
+                    if phys_out is not None:
+                        msg += (
+                            f" bounds={phys_out.bounds.item():.4f}"
+                            f" ramp={phys_out.ramp.item():.4f}"
+                            f" smooth={phys_out.smoothness.item():.4f}"
+                        )
+
+                print(msg)
 
         if scheduler is not None:
             scheduler.step()
