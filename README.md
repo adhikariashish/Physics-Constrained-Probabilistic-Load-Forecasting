@@ -1,6 +1,8 @@
 # ⚡ Physics-Constrained Probabilistic Load Forecasting
 
-A deep learning system for **24-hour ahead probabilistic power demand forecasting** using a Transformer model enhanced with **physics-based constraints** to improve forecast stability and realism.
+A deep learning system for **24-hour ahead probabilistic power demand forecasting** with uncertainty estimation and **physics-based constraints**, built using PyTorch Transformers and deployed through an interactive Streamlit Dashboard.
+
+The system produces **probabilistic forecasts**, peak-risk alerts, and uncertainty intervals to support **power grid planning and operational decision-making.**
 
 The project compares:
 
@@ -36,7 +38,18 @@ The system incorporates **physical constraints of power systems** such as:
 - smooth temporal transitions
 
 ---
+## System Key Features
 
+### Probabilistic Load Forecasting
+
+The system predicts electricity demand for the next 24 hours, providing a comprehensive view of potential outcomes rather than a single data point:
+
+- **Mean Load Forecast:** The expected average demand.
+- **Standard Deviation:** A measure of forecast uncertainty.
+- **80% Prediction Intervals:** The range where load is likely to fall with 80% confidence.
+- **95% Prediction Intervals:** The range for high-certainty risk planning.
+
+---
 ## Model Architecture
 
 **Transformer backbone:**
@@ -54,19 +67,49 @@ Temporal Feature Encoding
  Probabilistic Forecast
       (24 hours)
 ```
+### Transformer-Based Forecast Model
+
+The engine utilizes a Transformer architecture specifically optimized for time-series data, capturing complex patterns that traditional models might miss.
+
+**Input Features:**
+
+- **Historical Load:** Past performance data.
+- **Temporal Encoding:** Hour of day and day of week (using `sin/cos` encoding to maintain cyclical relationships).
+- **Calendrical Context:** Weekend and holiday indicators.
+
+> **Note:** The model analyzes a 168-hour historical window to learn long-term temporal dependencies and weekly cycles.
+
+---
+
+### Physics-Constrained Learning
+
+To ensure the model doesn't produce mathematically "correct" but physically impossible results, physics-inspired penalties are incorporated during training:
+
+| Constraint | Purpose |
+|---|---|
+| Ramp Penalty | Prevents unrealistic, instantaneous jumps in electrical load. |
+| Bound Constraint | Ensures forecasts stay within the physical limits of the grid. |
+| Smoothness Penalty | Encourages realistic, continuous load trajectories. |
+
+These constraints significantly improve the **stability and realism** of generated predictions.
 
 **Physics-informed loss:**
 ```
 Total Loss = Forecast Loss + λ * Physics Penalty
 ```
-
-Physics penalties include:
-
-- ramp constraints
-- load bounds
-- optional smoothness regularization
-
 ---
+
+### Probabilistic Risk Detection
+
+Forecast outputs are automatically screened to identify potential grid stress. The dashboard highlights risk hours directly on the forecast chart based on the following tiers:
+
+| Risk Level | Description |
+|---|---|
+| Normal | Load is within the safe operating range. |
+| Moderate | Load is approaching system capacity limits. |
+| High | Critical potential for grid stress or peak demand failure. |
+---
+
 
 ## Dataset
 
@@ -139,14 +182,15 @@ This allows grid operators to evaluate **forecast uncertainty and risk**.
 
 ## Streamlit Dashboard
 
-The project includes an interactive forecasting dashboard.
+The dashboard visualizes the 24-hour probabilistic forecast with uncertainty bands and risk detection.
 
 **Features:**
 
-- next-24-hour load forecast
+- Mean Forecast trajectory
 - 80% and 95% confidence intervals
-- peak demand prediction
-- forecast table export
+- peak load marker
+- High-risk and moderate-risk hour detection
+- Forecast metadata and peak summary
 
 **Run:**
 ```bash
