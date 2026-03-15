@@ -284,3 +284,8 @@ Possible improvements:
 ## Author
 
 **Ashish Adhikari**
+
+
+## License
+
+MIT License
