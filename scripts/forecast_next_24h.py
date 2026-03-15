@@ -128,11 +128,10 @@ def main() -> None:
 
     # Build forecast timestamps
     last_ts = pd.to_datetime(ctx_df[ts_col].iloc[-1])
-    freq = cfg.data.data_schema.freq
     future_index = pd.date_range(
         start=last_ts + pd.Timedelta(hours=1),
         periods=horizon,
-        freq=freq,
+        freq="h",
     )
 
     # Intervals
@@ -158,6 +157,34 @@ def main() -> None:
             }
         )
 
+    # -------------------------------------------------
+    # Peak / risk detection (NEW)
+    # -------------------------------------------------
+    mean_values = [r["mean_mw"] for r in rows]
+    peak_threshold_mw = 0.95 * max(mean_values)
+
+    risk_rows = []
+    for r in rows:
+        is_peak_mean = r["mean_mw"] >= peak_threshold_mw
+        is_peak_upper = r["upper_95_mw"] >= peak_threshold_mw
+
+        risk_level = "normal"
+        if is_peak_mean and is_peak_upper:
+            risk_level = "high"
+        elif is_peak_mean or is_peak_upper:
+            risk_level = "moderate"
+
+        risk_rows.append(
+            {
+                **r,
+                "risk_level": risk_level,
+                "is_peak_mean": bool(is_peak_mean),
+                "is_peak_upper95": bool(is_peak_upper),
+            }
+        )
+
+    peak_hour = max(risk_rows, key=lambda x: x["mean_mw"])
+
     result = {
         "run_name": run_dir.name,
         "source": args.source,
@@ -166,7 +193,14 @@ def main() -> None:
         "context_length": context_length,
         "horizon": horizon,
         "last_context_timestamp": last_ts.isoformat(),
-        "forecast": rows,
+        "peak_summary": {
+            "peak_threshold_mw": float(peak_threshold_mw),
+            "peak_timestamp": peak_hour["timestamp"],
+            "peak_mean_mw": float(peak_hour["mean_mw"]),
+            "peak_upper_95_mw": float(peak_hour["upper_95_mw"]),
+            "peak_risk_level": peak_hour["risk_level"],
+        },
+        "forecast": risk_rows,
     }
 
     out_path.write_text(json.dumps(result, indent=2))

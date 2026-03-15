@@ -6,3 +6,5 @@ openpyxl
 pyarrow>=14.0
 torch
 matplotlib
+streamlit
+plotly
