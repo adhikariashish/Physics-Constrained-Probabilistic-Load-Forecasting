@@ -234,15 +234,6 @@ def train(cfg: AppConfig, *, source: str = "system") -> Path:
             else:
                 Xs, ys = X, y
 
-            # optimizer.zero_grad(set_to_none=True)
-            # out = model(Xs)
-            # if isinstance(out, tuple):
-            #     mu, sigma = out
-            # else:
-            #     mu, sigma = out.mu, out.sigma
-            #
-            # loss = gaussian_nll(y=ys, mu=mu, sigma=sigma)
-            # loss.backward()
             optimizer.zero_grad(set_to_none=True)
             out = model(Xs)
 

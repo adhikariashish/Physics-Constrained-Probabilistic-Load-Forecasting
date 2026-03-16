@@ -2,7 +2,7 @@
 train:
   run:
     dir: "runs"
-    name: "exp_transformer_physics_zones_v0"   # instead of exp_transformer_gaussian_v0
+    name: "exp_transformer_physics_v1"   # instead of exp_transformer_gaussian_v0
     tags: [ "variantA", "lstm", "hourly", "probabilistic" ]  # optional clarity
     notes: "placeholder run notes"
 
@@ -31,7 +31,7 @@ train:
       min_lr: 1.0e-6
 
   loop:
-    epochs: 50
+    epochs: 1
     batch_size: 64
     num_workers: 4
     log_every_steps: 50

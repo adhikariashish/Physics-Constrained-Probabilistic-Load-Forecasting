@@ -132,7 +132,7 @@ class TransformerBackbone(nn.Module):
     Notes:
     - This backbone does NOT produce forecast outputs.
     - It only encodes the context window into a latent representation.
-    - A forecaster head (e.g. Gaussian head) will sit on top later.
+    - A forecaster head (e.g. Gaussian head) will sit on top.
     """
 
     def __init__(self, cfg: TransformerBackboneConfig) -> None:
@@ -144,10 +144,10 @@ class TransformerBackbone(nn.Module):
                 f"d_model={cfg.d_model} must be divisible by n_heads={cfg.n_heads}"
             )
 
-        # Step 1: project raw features F -> d_model
+        # project raw features F -> d_model
         self.input_proj = nn.Linear(int(cfg.num_features), int(cfg.d_model))
 
-        # Step 2: positional encoding
+        # positional encoding
         if cfg.positional_encoding_type == "learned":
             self.positional_encoding = LearnedPositionalEncoding(
                 max_len=int(cfg.context_length),
@@ -163,7 +163,7 @@ class TransformerBackbone(nn.Module):
                 f"Unsupported positional_encoding_type={cfg.positional_encoding_type!r}"
             )
 
-        # Step 3: transformer encoder stack
+        # transformer encoder stack
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=int(cfg.d_model),
             nhead=int(cfg.n_heads),

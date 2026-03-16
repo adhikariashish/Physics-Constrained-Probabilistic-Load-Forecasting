@@ -1,7 +1,7 @@
   # model config
 model:
   name: "transformer_forecaster"  # options: transformer_forecaster, lstm_forecaster
-  version: "v0"
+  version: "v1"
 
   io:
     context_length: 168

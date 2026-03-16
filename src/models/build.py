@@ -5,7 +5,7 @@ from src.models.forecasters import (
     LSTMGaussianForecaster,
     LSTMGaussianForecasterConfig,
 )
-from src.models.forecasters.transformer_gaussian import TransformerGaussianForecaster
+from src.models.forecasters.transformer_gaussian import TransformerGaussianForecaster, TransformerGaussianForecasterConfig
 
 
 def build_model(cfg: AppConfig, *, input_dim: int):
@@ -100,8 +100,8 @@ def build_model(cfg: AppConfig, *, input_dim: int):
         transformer_cfg.positional_encoding.get("type", "learned")
     ).lower()
 
-    return TransformerGaussianForecaster(
-        num_features=int(input_dim),
+    transformer_gau_cfg = TransformerGaussianForecasterConfig(
+        input_dim=int(input_dim),
         context_length=context_length,
         horizon=horizon,
         d_model=int(transformer_cfg.d_model),
@@ -117,3 +117,5 @@ def build_model(cfg: AppConfig, *, input_dim: int):
         min_sigma=min_sigma,
         sigma_activation=sigma_act,
     )
+
+    return TransformerGaussianForecaster(transformer_gau_cfg)

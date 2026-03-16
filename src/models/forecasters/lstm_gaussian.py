@@ -22,6 +22,7 @@ class LSTMGaussianForecasterConfig:
     head_hidden_dim: int = 128
     head_dropout: float = 0.1
     sigma_min: float = 1e-6
+    sigma_activation: str = "softplus"
 
 
 class LSTMGaussianForecaster(nn.Module):
@@ -48,11 +49,12 @@ class LSTMGaussianForecaster(nn.Module):
             horizon=cfg.horizon,
             hidden_dim=cfg.head_hidden_dim,
             dropout=cfg.head_dropout,
-            sigma_min=cfg.sigma_min,
+            min_sigma=cfg.sigma_min,
+            sigma_activation=cfg.sigma_activation,
         )
         self.head = GaussianHead(head_cfg)
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         context = self.encoder(x)
-        mu, sigma = self.head(context)
-        return mu, sigma
+        out = self.head(context)
+        return out.mu, out.sigma

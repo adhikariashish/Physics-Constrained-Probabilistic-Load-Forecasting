@@ -439,8 +439,8 @@ class PlotsCfg(BaseModel):
     error_heatmap: Dict[str, Any] = Field(default_factory=lambda: {"enabled": True, "group_by": ["hour_of_day", "day_of_week"]})
 
 class OutputDirCfg(BaseModel):
-    reports_root: str = "reports",
-    figures_dir: str = "reports/figures",
+    reports_root: str = "reports"
+    figures_dir: str = "reports/figures"
     metrics_dir: str = "reports/metrics"
 
 class ReportingCfg(BaseModel):

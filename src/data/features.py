@@ -115,7 +115,7 @@ def _estimate_missing_hours(df: pd.DataFrame, ts_col: str, freq: str) -> int:
 
     NOTE: because we keep timestamps naive local time, DST transitions can produce
     apparent gaps/duplicates depending on the reporting convention. We treat this
-    as a diagnostic only (logged), not something we "fix" in Milestone 1.
+    as a diagnostic only (logged).
     """
     if df.empty:
         return 0
@@ -134,7 +134,7 @@ def _apply_missing_policy_target(
     policy: str,
 ) -> Tuple[pd.DataFrame, int]:
     """
-    Apply missingness policy to the target column only (Milestone 1).
+    Apply missingness policy to the target column onl.
     """
     before = len(df)
     pol = (policy or "drop").strip().lower()
@@ -382,23 +382,18 @@ def build_processed_frames(
 
     Returns:
       - system_df: ['timestamp', 'load_mw']  (ALWAYS)
-      - zones_df:  ['timestamp', zones..., 'ERCOT'] (OPTIONAL; controlled by cfg.data.output.save_zones)
+      - zones_df:  ['timestamp', zones..., 'ERCOT']
       - stats: CleanStats for reporting
-
-    Milestone 1 choices:
-      - timestamps are kept timezone-naive (treated as America/Chicago local clock time)
-      - Hour Ending convention is preserved (no shifting)
-      - Dedupe is done on naive timestamps, keeping last
     """
     if canonical_df is None or canonical_df.empty:
         raise ValueError("canonical_df is empty. Check ingestion output and raw files.")
 
-    # ----- Config extraction (kept minimal + robust) -----
+    # ----- Config extraction  -----
     ts_col = getattr(data_cfg.data_schema, "timestamp_col", "timestamp")
     freq = getattr(data_cfg.data_schema, "freq", "h")
     tz_note = getattr(data_cfg.data_schema, "timezone", "America/Chicago")  # metadata only
 
-    # Hour convention note (we preserve "ending")
+    # Hour convention note
     hour_convention = getattr(data_cfg.data_schema, "hour_convention", "ending")
     hour_note = f"ERCOT Hour {hour_convention.capitalize()} (stored naive local time)"
 
@@ -430,11 +425,11 @@ def build_processed_frames(
     df = df.dropna(subset=[ts_col]).reset_index(drop=True)
     rows_after_drop_bad_ts = int(len(df))
 
-    # Sort + dedupe first (safe)
+    # Sort + dedupe first
     df, dup_dropped_1 = _sort_and_dedupe_keep_last(df, ts_col=ts_col)
     rows_after_dedupe = int(len(df))
 
-    # Diagnostic: estimate missing hours on the hourly grid (naive)
+    # estimate missing hours on the hourly grid (naive)
     missing_hours = _estimate_missing_hours(df, ts_col=ts_col, freq=freq)
 
     # Apply missing policy on the system target (ERCOT)
@@ -459,7 +454,7 @@ def build_processed_frames(
 
     system_df, tf_stats_system = add_time_features(system_df, data_cfg=data_cfg, ts_col=ts_col)
 
-    # Optional zones output (keep whatever zone columns exist + ERCOT)
+    # zones output
     zones_df: Optional[pd.DataFrame] = None
     zones_hourly_stats = None
     if save_zones:

@@ -58,7 +58,7 @@ def main() -> None:
     # ---- Clean + select outputs ----
     system_df, zones_df, clean_stats = build_processed_frames(canonical_df, cfg.data)
 
-    # ---- Resolve output paths from config (with safe defaults) ----
+    # ---- Resolve output paths from config ----
     processed_dir = Path(getattr(cfg.data.source, "processed_dir", "data/processed"))
     out_cfg = getattr(cfg.data, "output", None)
 
